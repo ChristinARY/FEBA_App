@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FEBA – Application de Gestion Scolaire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1a3c5e;
+    --primary-light: #2563a8;
+    --accent: #f59e0b;
+    --accent2: #10b981;
+    --danger: #ef4444;
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --surface2: #f8fafc;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text2: #475569;
+    --text3: #94a3b8;
+    --sidebar-w: 240px;
+    --header-h: 64px;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 24px rgba(0,0,0,.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
+
+  /* LOGIN */
+  #login-screen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f2942 0%, #1a3c5e 50%, #0e4f8a 100%);
+    position: relative; overflow: hidden;
+  }
+  #login-screen::before {
+    content:''; position:absolute; width:600px; height:600px; border-radius:50%;
+    background: rgba(245,158,11,.08); top:-200px; right:-200px;
+  }
+  #login-screen::after {
+    content:''; position:absolute; width:400px; height:400px; border-radius:50%;
+    background: rgba(37,99,168,.15); bottom:-150px; left:-100px;
+  }
+  .login-card {
+    background: white; border-radius: 20px; padding: 48px 40px; width: 400px; max-width: 95vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3); position: relative; z-index: 1;
+  }
+  .login-logo {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 32px;
+  }
+  .login-logo-icon {
+    width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: white; font-family: 'Syne', sans-serif; font-weight: 800;
+  }
+  .login-logo h1 { font-size: 24px; color: var(--primary); }
+  .login-logo p { font-size: 12px; color: var(--text3); margin-top: -2px; }
+  .login-title { font-size: 20px; margin-bottom: 8px; }
+  .login-sub { color: var(--text2); font-size: 14px; margin-bottom: 28px; }
+  .form-group { margin-bottom: 18px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: inherit; font-size: 14px; color: var(--text); background: var(--surface2);
+    transition: border .2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: var(--primary-light); background: white;
+  }
+  .role-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+  .role-tab {
+    flex:1; padding: 10px; border: 1.5px solid var(--border); border-radius: 8px;
+    background: var(--surface2); cursor: pointer; text-align: center; font-size: 13px;
+    font-weight: 600; color: var(--text2); transition: all .2s; font-family: inherit;
+  }
+  .role-tab.active { border-color: var(--primary-light); background: #eff6ff; color: var(--primary-light); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-accent:hover { background: #d97706; }
+  .btn-success { background: var(--accent2); color: white; }
+  .btn-success:hover { background: #059669; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-danger:hover { background: #dc2626; }
+  .btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+  .btn-outline:hover { background: var(--primary); color: white; }
+  .btn-sm { padding: 6px 14px; font-size: 13px; }
+  .btn-full { width: 100%; justify-content: center; }
+  .btn-icon { width: 36px; height: 36px; padding: 0; justify-content: center; }
+
+  /* LAYOUT */
+  #app { display: none; min-height: 100vh; }
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w);
+    background: var(--primary); overflow-y: auto; z-index: 100;
+    display: flex; flex-direction: column;
+  }
+  .sidebar-brand {
+    padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,.1);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sidebar-brand-icon {
+    width: 38px; height: 38px; background: var(--accent); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; color: white; font-size: 16px;
+  }
+  .sidebar-brand-text h2 { color: white; font-size: 16px; }
+  .sidebar-brand-text p { color: rgba(255,255,255,.5); font-size: 11px; }
+  .sidebar-nav { flex: 1; padding: 12px 0; }
+  .nav-section { padding: 8px 16px 4px; font-size: 10px; font-weight: 700; color: rgba(255,255,255,.35); letter-spacing: 1.2px; text-transform: uppercase; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; color: rgba(255,255,255,.7); cursor: pointer;
+    font-size: 13.5px; font-weight: 500; transition: all .15s; border-left: 3px solid transparent;
+    margin: 1px 0;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.07); color: white; }
+  .nav-item.active { background: rgba(255,255,255,.12); color: white; border-left-color: var(--accent); }
+  .nav-item .ni { font-size: 16px; width: 20px; text-align: center; }
+  .sidebar-user {
+    padding: 14px 16px; border-top: 1px solid rgba(255,255,255,.1);
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+  }
+  .sidebar-user-avatar {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--accent);
+    display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 13px;
+  }
+  .sidebar-user-info { flex: 1; min-width: 0; }
+  .sidebar-user-info p { color: white; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-user-info span { color: rgba(255,255,255,.5); font-size: 11px; }
+
+  .main { margin-left: var(--sidebar-w); min-height: 100vh; }
+  .topbar {
+    position: sticky; top: 0; height: var(--header-h); background: white;
+    border-bottom: 1px solid var(--border); display: flex; align-items: center;
+    padding: 0 24px; gap: 16px; z-index: 50; box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  }
+  .topbar-title { font-size: 18px; font-weight: 700; flex: 1; }
+  .content { padding: 24px; }
+
+  /* CARDS */
+  .card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-header h3 { font-size: 15px; font-weight: 700; }
+  .card-body { padding: 20px; }
+
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow);
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .stat-icon {
+    width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
+  }
+  .stat-icon.blue { background: #eff6ff; }
+  .stat-icon.amber { background: #fffbeb; }
+  .stat-icon.green { background: #f0fdf4; }
+  .stat-icon.purple { background: #faf5ff; }
+  .stat-icon.red { background: #fff5f5; }
+  .stat-info p { font-size: 26px; font-weight: 800; font-family: 'Syne', sans-serif; line-height: 1; }
+  .stat-info span { font-size: 13px; color: var(--text2); }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead tr { background: var(--surface2); }
+  th { padding: 11px 14px; text-align: left; font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; border-bottom: 1.5px solid var(--border); }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* BADGE */
+  .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge-green { background: #dcfce7; color: #16a34a; }
+  .badge-red { background: #fee2e2; color: #dc2626; }
+  .badge-amber { background: #fef3c7; color: #d97706; }
+  .badge-blue { background: #dbeafe; color: #2563eb; }
+  .badge-purple { background: #ede9fe; color: #7c3aed; }
+  .badge-gray { background: #f1f5f9; color: #64748b; }
+
+  /* AVATAR */
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-weight: 700; font-size: 13px; color: white; flex-shrink: 0;
+  }
+  .avatar-info { display: flex; align-items: center; gap: 10px; }
+  .avatar-info .name { font-weight: 600; font-size: 14px; }
+  .avatar-info .sub { font-size: 12px; color: var(--text2); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 200;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: white; border-radius: 16px; width: 100%; max-width: 560px;
+    max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md);
+    transform: translateY(20px); transition: transform .2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .modal-header h3 { font-size: 17px; }
+  .modal-body { padding: 24px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+  /* FORM GRID */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-grid .full { grid-column: 1/-1; }
+
+  /* SEARCH BAR */
+  .search-bar {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .search-input-wrap {
+    position: relative; flex: 1; min-width: 200px;
+  }
+  .search-input-wrap input {
+    width: 100%; padding: 9px 12px 9px 36px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-family: inherit; font-size: 14px; background: white;
+  }
+  .search-input-wrap input:focus { outline: none; border-color: var(--primary-light); }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 14px; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
+  .tab {
+    padding: 10px 18px; font-size: 14px; font-weight: 600; color: var(--text2);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s; font-family: inherit; background: none; border-top: none; border-left: none; border-right: none;
+  }
+  .tab.active { color: var(--primary-light); border-bottom-color: var(--primary-light); }
+
+  /* PAGES */
+  .page { display: none; animation: fadein .2s; }
+  .page.active { display: block; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* GRID LAYOUTS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* MESSAGES */
+  .msg-list { display: flex; flex-direction: column; gap: 2px; }
+  .msg-item {
+    padding: 14px 16px; border-radius: 8px; cursor: pointer; display: flex; gap: 12px;
+    align-items: flex-start; border: 1px solid transparent; transition: all .15s;
+  }
+  .msg-item:hover { background: var(--surface2); }
+  .msg-item.unread { background: #eff6ff; border-color: #bfdbfe; }
+  .msg-item .msg-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .msg-item .msg-body { flex: 1; min-width: 0; }
+  .msg-item .msg-from { font-weight: 600; font-size: 13px; }
+  .msg-item .msg-subject { font-size: 13px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .msg-item .msg-date { font-size: 11px; color: var(--text3); flex-shrink: 0; }
+
+  /* NOTIF */
+  .notif-dot { width: 8px; height: 8px; background: var(--danger); border-radius: 50%; }
+
+  /* TIMELINE */
+  .timeline { display: flex; flex-direction: column; gap: 16px; }
+  .timeline-item { display: flex; gap: 12px; }
+  .timeline-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 5px; }
+  .timeline-content { flex: 1; }
+  .timeline-content h4 { font-size: 13px; font-weight: 600; }
+  .timeline-content p { font-size: 12px; color: var(--text2); }
+
+  /* BULLETIN STYLE */
+  .bulletin {
+    border: 2px solid var(--primary); border-radius: 12px; padding: 24px;
+    max-width: 600px; background: white;
+  }
+  .bulletin-header { text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 16px; }
+  .bulletin-header h2 { font-size: 20px; color: var(--primary); }
+  .bulletin table th { background: var(--primary); color: white; }
+
+  /* CHART PLACEHOLDER */
+  .chart-placeholder {
+    height: 220px; background: var(--surface2); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    gap: 8px; color: var(--text3);
+  }
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding: 0 8px; }
+  .bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .bar { width: 100%; background: var(--primary-light); border-radius: 4px 4px 0 0; transition: height .5s; min-height: 4px; }
+  .bar-label { font-size: 11px; color: var(--text2); text-align: center; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    :root { --sidebar-w: 0px; }
+    .sidebar { transform: translateX(-240px); width: 240px; transition: transform .3s; }
+    .sidebar.open { transform: translateX(0); --sidebar-w: 240px; }
+    .main { margin-left: 0; }
+    .grid-2, .grid-3, .form-grid { grid-template-columns: 1fr; }
+    .form-grid .full { grid-column: 1; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* EMPLOI DU TEMPS */
+  .timetable { display: grid; grid-template-columns: 80px repeat(5, 1fr); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 12px; }
+  .tt-header { background: var(--primary); color: white; padding: 8px; text-align: center; font-weight: 700; font-size: 11px; }
+  .tt-hour { background: var(--surface2); padding: 8px; text-align: center; color: var(--text2); font-weight: 600; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: 11px; }
+  .tt-cell { padding: 6px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); min-height: 50px; }
+  .tt-slot { background: #eff6ff; border-left: 3px solid var(--primary-light); padding: 4px 6px; border-radius: 4px; font-size: 11px; }
+  .tt-slot.math { background: #fffbeb; border-color: var(--accent); }
+  .tt-slot.science { background: #f0fdf4; border-color: var(--accent2); }
+  .tt-slot.lang { background: #fdf4ff; border-color: #a855f7; }
+
+  /* PAIEMENTS */
+  .payment-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: white;
+  }
+  .payment-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+
+  /* ANNOUNCEMENTS */
+  .announce-item { padding: 16px; border-left: 4px solid var(--primary-light); background: white; border-radius: 0 8px 8px 0; box-shadow: var(--shadow); margin-bottom: 12px; }
+  .announce-item.urgent { border-color: var(--danger); }
+  .announce-item.info { border-color: var(--accent2); }
+  .announce-item h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .announce-item p { font-size: 13px; color: var(--text2); }
+  .announce-item .meta { font-size: 11px; color: var(--text3); margin-top: 6px; }
+
+  /* SCROLL */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text3); }
+  .empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width .5s; }
+
+  .info-box { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+  .info-box.blue { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .info-box.green { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+  .info-box.amber { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">F</div>
+      <div>
+        <h1>FEBA</h1>
+        <p>Gestion Scolaire</p>
+      </div>
+    </div>
+    <h2 class="login-title">Bienvenue 👋</h2>
+    <p class="login-sub">Connectez-vous à votre espace</p>
+    <div class="role-tabs">
+      <button class="role-tab active" onclick="selectRole('admin', this)">🏫 Admin</button>
+      <button class="role-tab" onclick="selectRole('enseignant', this)">👨‍🏫 Enseignant</button>
+      <button class="role-tab" onclick="selectRole('parent', this)">👪 Parent</button>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="login-email" value="admin@feba.edu" placeholder="email@exemple.com">
+    </div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input type="password" id="login-pwd" value="admin123" placeholder="••••••••">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:8px; padding:13px;">
+      Se connecter
+    </button>
+    <p style="text-align:center; font-size:12px; color:var(--text3); margin-top:20px;">
+      Version Démo By M. Chris </Br>
+      Id & MP : admin@feba.edu / admin123
+    </p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">F</div>
+      <div class="sidebar-brand-text">
+        <h2>FEBA</h2>
+        <p>Gestion Scolaire</p>
+      </div>
+    </div>
+    <div class="sidebar-nav" id="sidebar-nav"></div>
+    <div class="sidebar-user" onclick="logout()">
+      <div class="sidebar-user-avatar" id="user-avatar">A</div>
+      <div class="sidebar-user-info">
+        <p id="user-name">Administrateur</p>
+        <span id="user-role-label">Admin</span>
+      </div>
+      <span style="color:rgba(255,255,255,.4); font-size:18px;">⇠</span>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <button onclick="toggleSidebar()" style="background:none;border:none;cursor:pointer;font-size:20px;display:none;" id="menu-btn">☰</button>
+      <span class="topbar-title" id="topbar-title">Tableau de bord</span>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div style="position:relative;">
+          <span style="font-size:20px;cursor:pointer;" onclick="showPage('annonces')">🔔</span>
+          <span style="position:absolute;top:-4px;right:-4px;width:14px;height:14px;background:var(--danger);border-radius:50%;font-size:9px;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;">3</span>
+        </div>
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;" id="topbar-avatar">A</div>
+      </div>
+    </div>
+    <div class="content" id="page-content"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Modal</h3>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const DATA = {
+  school: { name: "École FEBA", address: "Cotonou, Bénin", phone: "+229 01 96 06 24 48", email: "contact@feba.edu", annee: "2025-2026" },
+  classes: [
+    { id: 1, nom: "CP1", niveau: "CP", capacite: 30, effectif: 28 },
+    { id: 2, nom: "CP2", niveau: "CP", capacite: 30, effectif: 25 },
+    { id: 3, nom: "CE1", niveau: "CE1", capacite: 32, effectif: 31 },
+    { id: 4, nom: "CE2", niveau: "CE2", capacite: 32, effectif: 29 },
+    { id: 5, nom: "CM1", niveau: "CM1", capacite: 35, effectif: 33 },
+    { id: 6, nom: "CM2", niveau: "CM2", capacite: 35, effectif: 30 },
+  ],
+  matieres: [
+    { id: 1, nom: "Mathématiques", code: "MATH", coeff: 3 },
+    { id: 2, nom: "Français", code: "FR", coeff: 3 },
+    { id: 3, nom: "Sciences", code: "SCI", coeff: 2 },
+    { id: 4, nom: "Histoire-Géo", code: "HG", coeff: 2 },
+    { id: 5, nom: "Anglais", code: "ANG", coeff: 2 },
+    { id: 6, nom: "Éducation Physique", code: "EPS", coeff: 1 },
+  ],
+  eleves: [
+    { id: 1, matricule: "FEB-2025-001", nom: "Kouassi", prenom: "Ama", dob: "2016-03-12", sexe: "F", classe_id: 3, parent_id: 1, statut: "actif" },
+    { id: 2, matricule: "FEB-2025-002", nom: "Diallo", prenom: "Ibrahim", dob: "2015-07-22", sexe: "M", classe_id: 4, parent_id: 2, statut: "actif" },
+    { id: 3, matricule: "FEB-2025-003", nom: "Mensah", prenom: "Koffi", dob: "2014-11-05", sexe: "M", classe_id: 5, parent_id: 3, statut: "actif" },
+    { id: 4, matricule: "FEB-2025-004", nom: "Adomou", prenom: "Estelle", dob: "2016-01-18", sexe: "F", classe_id: 3, parent_id: 1, statut: "actif" },
+    { id: 5, matricule: "FEB-2025-005", nom: "Saka", prenom: "Romuald", dob: "2013-09-30", sexe: "M", classe_id: 6, parent_id: 4, statut: "actif" },
+    { id: 6, matricule: "FEB-2025-006", nom: "Hounyo", prenom: "Christelle", dob: "2017-04-14", sexe: "F", classe_id: 1, parent_id: 5, statut: "actif" },
+    { id: 7, matricule: "FEB-2025-007", nom: "Gbenou", prenom: "Pascal", dob: "2017-08-02", sexe: "M", classe_id: 2, parent_id: 6, statut: "actif" },
+    { id: 8, matricule: "FEB-2025-008", nom: "Akpo", prenom: "Sandrine", dob: "2015-12-20", sexe: "F", classe_id: 4, parent_id: 7, statut: "inactif" },
+  ],
+  parents: [
+    { id: 1, nom: "Kouassi", prenom: "Marie", email: "marie.kouassi@gmail.com", tel: "+229 97 12 34 56", lien: "Mère", statut: "actif" },
+    { id: 2, nom: "Diallo", prenom: "Mamadou", email: "m.diallo@yahoo.fr", tel: "+229 96 45 67 89", lien: "Père", statut: "actif" },
+    { id: 3, nom: "Mensah", prenom: "Kofi", email: "kofi.mensah@gmail.com", tel: "+229 95 23 45 67", lien: "Père", statut: "actif" },
+    { id: 4, nom: "Saka", prenom: "Fatima", email: "fatima.saka@gmail.com", tel: "+229 94 56 78 90", lien: "Mère", statut: "actif" },
+    { id: 5, nom: "Hounyo", prenom: "Roger", email: "r.hounyo@outlook.com", tel: "+229 93 78 90 12", lien: "Père", statut: "actif" },
+    { id: 6, nom: "Gbenou", prenom: "Claire", email: "claire.gbenou@gmail.com", tel: "+229 92 34 56 78", lien: "Mère", statut: "actif" },
+    { id: 7, nom: "Akpo", prenom: "Victor", email: "v.akpo@gmail.com", tel: "+229 91 90 12 34", lien: "Père", statut: "actif" },
+  ],
+  enseignants: [
+    { id: 1, nom: "Zannou", prenom: "Bertrand", email: "b.zannou@feba.edu", tel: "+229 97 11 22 33", matieres: [1,2], classes: [3,4,5], statut: "actif" },
+    { id: 2, nom: "Dossou", prenom: "Astride", email: "a.dossou@feba.edu", tel: "+229 96 44 55 66", matieres: [3,4], classes: [5,6], statut: "actif" },
+    { id: 3, nom: "Kossou", prenom: "Martial", email: "m.kossou@feba.edu", tel: "+229 95 77 88 99", matieres: [5,6], classes: [1,2,3,4], statut: "actif" },
+    { id: 4, nom: "Assogba", prenom: "Laure", email: "l.assogba@feba.edu", tel: "+229 94 00 11 22", matieres: [1,3], classes: [6], statut: "actif" },
+  ],
+  notes: [
+    { id: 1, eleve_id: 1, matiere_id: 1, note: 14.5, type: "Devoir", date: "2026-02-10", trimestre: 2 },
+    { id: 2, eleve_id: 1, matiere_id: 2, note: 16, type: "Composition", date: "2026-02-15", trimestre: 2 },
+    { id: 3, eleve_id: 1, matiere_id: 3, note: 12, type: "Devoir", date: "2026-02-18", trimestre: 2 },
+    { id: 4, eleve_id: 2, matiere_id: 1, note: 11, type: "Devoir", date: "2026-02-10", trimestre: 2 },
+    { id: 5, eleve_id: 2, matiere_id: 2, note: 13.5, type: "Composition", date: "2026-02-15", trimestre: 2 },
+    { id: 6, eleve_id: 3, matiere_id: 1, note: 18, type: "Composition", date: "2026-02-20", trimestre: 2 },
+    { id: 7, eleve_id: 3, matiere_id: 4, note: 15, type: "Devoir", date: "2026-02-22", trimestre: 2 },
+    { id: 8, eleve_id: 4, matiere_id: 2, note: 9.5, type: "Devoir", date: "2026-02-10", trimestre: 2 },
+  ],
+  absences: [
+    { id: 1, eleve_id: 1, date: "2026-03-10", type: "Absence", justifie: true, motif: "Maladie", notifie: true },
+    { id: 2, eleve_id: 2, date: "2026-03-12", type: "Retard", justifie: false, motif: "", notifie: true },
+    { id: 3, eleve_id: 3, date: "2026-03-05", type: "Absence", justifie: true, motif: "Rendez-vous médical", notifie: true },
+    { id: 4, eleve_id: 5, date: "2026-03-15", type: "Absence", justifie: false, motif: "", notifie: false },
+    { id: 5, eleve_id: 6, date: "2026-03-18", type: "Retard", justifie: true, motif: "Transport", notifie: true },
+  ],
+  devoirs: [
+    { id: 1, titre: "Exercices fractions", matiere_id: 1, classe_id: 4, enseignant_id: 1, date_limite: "2026-03-28", description: "Pages 45-47 exercices 1 à 10" },
+    { id: 2, titre: "Rédaction sur les saisons", matiere_id: 2, classe_id: 3, enseignant_id: 1, date_limite: "2026-03-30", description: "Rédaction de 15 lignes" },
+    { id: 3, titre: "Les êtres vivants", matiere_id: 3, classe_id: 5, enseignant_id: 2, date_limite: "2026-04-02", description: "Leçon à apprendre + questions" },
+    { id: 4, titre: "Vocabulaire Chapitre 5", matiere_id: 5, classe_id: 3, enseignant_id: 3, date_limite: "2026-03-27", description: "20 mots à apprendre" },
+  ],
+  messages: [
+    { id: 1, de: "Marie Kouassi", de_role: "Parent", sujet: "Absence de ma fille", corps: "Bonjour, je souhaitais vous informer que ma fille Ama sera absente demain pour un rendez-vous médical.", date: "2026-03-22", lu: false, a: "Admin" },
+    { id: 2, de: "Bertrand Zannou", de_role: "Enseignant", sujet: "Réunion pédagogique", corps: "Je propose une réunion pédagogique pour discuter des résultats du 2ème trimestre.", date: "2026-03-20", lu: true, a: "Admin" },
+    { id: 3, de: "Mamadou Diallo", de_role: "Parent", sujet: "Question sur les notes", corps: "Pouvez-vous m'expliquer comment accéder aux notes de mon fils Ibrahim ?", date: "2026-03-18", lu: false, a: "Admin" },
+    { id: 4, de: "Admin", de_role: "Admin", sujet: "Réponse: Absence de ma fille", corps: "Bonjour Mme Kouassi, nous avons bien pris note de l'absence d'Ama.", date: "2026-03-23", lu: true, a: "Marie Kouassi" },
+  ],
+  annonces: [
+    { id: 1, titre: "Réunion des parents d'élèves – 1er Avril", corps: "Nous vous informons qu'une réunion des parents d'élèves se tiendra le 1er avril 2026 à 18h00 dans la salle polyvalente.", type: "urgent", date: "2026-03-20", auteur: "Direction" },
+    { id: 2, titre: "Fin du 2ème trimestre", corps: "Le 2ème trimestre prend fin le 31 mars 2026. Les bulletins seront disponibles à partir du 5 avril.", type: "info", date: "2026-03-15", auteur: "Direction" },
+    { id: 3, titre: "Journée sportive – 15 Avril", corps: "Une journée sportive interclasses est organisée le 15 avril 2026. Tous les élèves doivent venir en tenue de sport.", type: "normal", date: "2026-03-10", auteur: "Direction" },
+  ],
+  paiements: [
+    { id: 1, eleve_id: 1, montant: 45000, date: "2026-01-05", type: "Frais scolaires T2", statut: "payé", recu: "REC-001" },
+    { id: 2, eleve_id: 2, montant: 45000, date: "2026-01-08", type: "Frais scolaires T2", statut: "payé", recu: "REC-002" },
+    { id: 3, eleve_id: 3, montant: 45000, date: "2026-02-15", type: "Frais scolaires T2", statut: "payé", recu: "REC-003" },
+    { id: 4, eleve_id: 4, montant: 45000, date: "2026-01-20", type: "Frais scolaires T2", statut: "en attente", recu: "" },
+    { id: 5, eleve_id: 5, montant: 45000, date: "2026-03-01", type: "Frais scolaires T2", statut: "payé", recu: "REC-004" },
+    { id: 6, eleve_id: 6, montant: 45000, date: "", type: "Frais scolaires T2", statut: "impayé", recu: "" },
+  ],
+};
+
+let currentRole = 'admin';
+let currentUser = null;
+let searchTerm = '';
+let activeTab = 0;
+
+// Menus par rôle
+const MENUS = {
+  admin: [
+    { section: "Principal" },
+    { id: "dashboard", label: "Tableau de bord", icon: "📊" },
+    { section: "Gestion" },
+    { id: "eleves", label: "Élèves", icon: "🎒" },
+    { id: "enseignants", label: "Enseignants", icon: "👨‍🏫" },
+    { id: "parents", label: "Parents", icon: "👪" },
+    { id: "classes", label: "Classes & Matières", icon: "🏫" },
+    { section: "Pédagogie" },
+    { id: "notes", label: "Notes", icon: "📝" },
+    { id: "bulletins", label: "Bulletins", icon: "📄" },
+    { id: "absences", label: "Absences", icon: "📅" },
+    { id: "devoirs", label: "Devoirs", icon: "📚" },
+    { id: "emploi_du_temps", label: "Emploi du temps", icon: "🕐" },
+    { section: "Communication" },
+    { id: "messages", label: "Messages", icon: "💬" },
+    { id: "annonces", label: "Annonces", icon: "📢" },
+    { section: "Finance" },
+    { id: "paiements", label: "Paiements", icon: "💰" },
+    { section: "Paramètres" },
+    { id: "etablissement", label: "Établissement", icon: "⚙️" },
+  ],
+  enseignant: [
+    { section: "Principal" },
+    { id: "dashboard", label: "Tableau de bord", icon: "📊" },
+    { section: "Mes Cours" },
+    { id: "classes", label: "Mes Classes", icon: "🏫" },
+    { id: "notes", label: "Notes", icon: "📝" },
+    { id: "absences", label: "Absences", icon: "📅" },
+    { id: "devoirs", label: "Devoirs", icon: "📚" },
+    { id: "emploi_du_temps", label: "Emploi du temps", icon: "🕐" },
+    { section: "Communication" },
+    { id: "messages", label: "Messages", icon: "💬" },
+  ],
+  parent: [
+    { section: "Principal" },
+    { id: "dashboard", label: "Accueil", icon: "🏠" },
+    { section: "Mon Enfant" },
+    { id: "eleves", label: "Mes Enfants", icon: "🎒" },
+    { id: "notes", label: "Notes & Résultats", icon: "📝" },
+    { id: "bulletins", label: "Bulletins", icon: "📄" },
+    { id: "absences", label: "Absences", icon: "📅" },
+    { id: "devoirs", label: "Devoirs", icon: "📚" },
+    { id: "emploi_du_temps", label: "Emploi du temps", icon: "🕐" },
+    { section: "Communication" },
+    { id: "messages", label: "Messages", icon: "💬" },
+    { id: "annonces", label: "Annonces", icon: "📢" },
+    { section: "Finance" },
+    { id: "paiements", label: "Paiements", icon: "💰" },
+  ],
+};
+
+// ============================================================
+// AUTH
+// ============================================================
+function selectRole(role, el) {
+  currentRole = role;
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const emails = { admin: 'admin@feba.edu', enseignant: 'enseignant@feba.edu', parent: 'parent@feba.edu' };
+  document.getElementById('login-email').value = emails[role];
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pwd = document.getElementById('login-pwd').value;
+  if (!email || !pwd) { alert('Veuillez remplir tous les champs'); return; }
+  
+  const users = {
+    admin: { name: 'Administrateur', initial: 'A', label: 'Administration' },
+    enseignant: { name: 'Bertrand Zannou', initial: 'B', label: 'Enseignant' },
+    parent: { name: 'Marie Kouassi', initial: 'M', label: 'Parent' },
+  };
+  currentUser = users[currentRole];
+  
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  
+  document.getElementById('user-name').textContent = currentUser.name;
+  document.getElementById('user-role-label').textContent = currentUser.label;
+  document.getElementById('user-avatar').textContent = currentUser.initial;
+  document.getElementById('topbar-avatar').textContent = currentUser.initial;
+  
+  buildSidebar();
+  showPage('dashboard');
+}
+
+function logout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function buildSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  const menu = MENUS[currentRole];
+  nav.innerHTML = '';
+  menu.forEach(item => {
+    if (item.section) {
+      nav.innerHTML += `<div class="nav-section">${item.section}</div>`;
+    } else {
+      nav.innerHTML += `<div class="nav-item" id="nav-${item.id}" onclick="showPage('${item.id}')">
+        <span class="ni">${item.icon}</span> ${item.label}
+      </div>`;
+    }
+  });
+}
+
+function showPage(pageId) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById('nav-' + pageId);
+  if (el) el.classList.add('active');
+  
+  const titles = {
+    dashboard: 'Tableau de bord', eleves: 'Élèves', enseignants: 'Enseignants',
+    parents: 'Parents', classes: 'Classes & Matières', notes: 'Notes',
+    bulletins: 'Bulletins', absences: 'Absences', devoirs: 'Devoirs',
+    emploi_du_temps: 'Emploi du temps', messages: 'Messages', annonces: 'Annonces',
+    paiements: 'Paiements', etablissement: 'Établissement',
+  };
+  document.getElementById('topbar-title').textContent = titles[pageId] || pageId;
+  
+  const content = document.getElementById('page-content');
+  const pages = {
+    dashboard: pageDashboard, eleves: pageEleves, enseignants: pageEnseignants,
+    parents: pageParents, classes: pageClasses, notes: pageNotes,
+    bulletins: pageBulletins, absences: pageAbsences, devoirs: pageDevoirs,
+    emploi_du_temps: pageEmploiDuTemps, messages: pageMessages, annonces: pageAnnonces,
+    paiements: pagePaiements, etablissement: pageEtablissement,
+  };
+  content.innerHTML = (pages[pageId] || (() => `<div class="empty-state"><div class="emoji">🚧</div><p>Page en construction</p></div>`))();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function getClasse(id) { return DATA.classes.find(c => c.id === id) || {}; }
+function getMatiere(id) { return DATA.matieres.find(m => m.id === id) || {}; }
+function getEleve(id) { return DATA.eleves.find(e => e.id === id) || {}; }
+function getParent(id) { return DATA.parents.find(p => p.id === id) || {}; }
+function avatarColor(n) { const c = ['#2563a8','#f59e0b','#10b981','#8b5cf6','#ef4444','#0891b2','#d97706']; return c[n % c.length]; }
+function initials(nom, prenom) { return (prenom?.[0] || '') + (nom?.[0] || ''); }
+function fmt(n) { return n?.toLocaleString('fr-FR') || '0'; }
+function age(dob) { const d = new Date(dob), now = new Date(); return now.getFullYear() - d.getFullYear(); }
+function fmtDate(d) { if (!d) return '–'; const dt = new Date(d); return dt.toLocaleDateString('fr-FR'); }
+
+function moyenne(eleveId) {
+  const notes = DATA.notes.filter(n => n.eleve_id === eleveId);
+  if (!notes.length) return null;
+  const total = notes.reduce((s, n) => s + n.note, 0);
+  return (total / notes.length).toFixed(2);
+}
+
+function mention(m) {
+  if (!m) return '';
+  const v = parseFloat(m);
+  if (v >= 16) return '<span class="badge badge-green">Excellent</span>';
+  if (v >= 14) return '<span class="badge badge-blue">Bien</span>';
+  if (v >= 12) return '<span class="badge badge-amber">Assez Bien</span>';
+  if (v >= 10) return '<span class="badge badge-gray">Passable</span>';
+  return '<span class="badge badge-red">Insuffisant</span>';
+}
+
+// ============================================================
+// PAGES
+// ============================================================
+
+// DASHBOARD
+function pageDashboard() {
+  const totalEleves = DATA.eleves.filter(e => e.statut === 'actif').length;
+  const totalEnseignants = DATA.enseignants.filter(e => e.statut === 'actif').length;
+  const totalParents = DATA.parents.length;
+  const totalClasses = DATA.classes.length;
+  const absNonJustif = DATA.absences.filter(a => !a.justifie).length;
+  const paiementsEnAttente = DATA.paiements.filter(p => p.statut !== 'payé').length;
+  
+  const barsHtml = DATA.classes.map(c => `
+    <div class="bar-wrap">
+      <div class="bar" style="height:${Math.round((c.effectif/c.capacite)*140)}px;background:${avatarColor(c.id-1)}"></div>
+      <div class="bar-label">${c.nom}<br/><strong>${c.effectif}</strong></div>
+    </div>`).join('');
+
+  if (currentRole === 'parent') {
+    const enfants = DATA.eleves.filter(e => e.parent_id === 1);
+    return `
+    <div class="info-box blue">👋 Bienvenue, ${currentUser.name} ! Voici le suivi de vos enfants.</div>
+    <div class="grid-2" style="margin-bottom:20px;">
+      ${enfants.map(e => {
+        const moy = moyenne(e.id);
+        const abs = DATA.absences.filter(a => a.eleve_id === e.id).length;
+        return `
+        <div class="card" style="padding:20px;display:flex;gap:14px;align-items:center;">
+          <div style="width:52px;height:52px;border-radius:50%;background:${avatarColor(e.id)};display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;flex-shrink:0;">${initials(e.nom, e.prenom)}</div>
+          <div style="flex:1;">
+            <p style="font-weight:700;font-size:15px;">${e.prenom} ${e.nom}</p>
+            <p style="font-size:13px;color:var(--text2);">${getClasse(e.classe_id).nom || ''} • Matr: ${e.matricule}</p>
+            <div style="display:flex;gap:10px;margin-top:8px;">
+              <span class="badge badge-blue">Moy: ${moy || 'N/A'}/20</span>
+              <span class="badge badge-amber">${abs} absence(s)</span>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="showPage('notes')">Voir notes</button>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><h3>📢 Dernières annonces</h3></div>
+        <div class="card-body" style="padding:0;">
+          ${DATA.annonces.slice(0,3).map(a => `<div style="padding:14px;border-bottom:1px solid var(--border);">
+            <p style="font-weight:600;font-size:13px;">${a.titre}</p>
+            <p style="font-size:12px;color:var(--text2);margin-top:4px;">${a.corps.substring(0,80)}...</p>
+            <p style="font-size:11px;color:var(--text3);margin-top:4px;">${fmtDate(a.date)}</p>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>📚 Prochains devoirs</h3></div>
+        <div class="card-body" style="padding:0;">
+          ${DATA.devoirs.slice(0,3).map(d => `<div style="padding:14px;border-bottom:1px solid var(--border);">
+            <p style="font-weight:600;font-size:13px;">${d.titre}</p>
+            <p style="font-size:12px;color:var(--text2);">${getMatiere(d.matiere_id).nom} • ${getClasse(d.classe_id).nom}</p>
+            <p style="font-size:11px;color:var(--danger);">⏰ ${fmtDate(d.date_limite)}</p>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }
+  
+  if (currentRole === 'enseignant') {
+    return `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon blue">🎒</div><div class="stat-info"><p>${DATA.eleves.filter(e => [3,4,5].includes(e.classe_id)).length}</p><span>Mes élèves</span></div></div>
+      <div class="stat-card"><div class="stat-icon green">🏫</div><div class="stat-info"><p>4</p><span>Mes classes</span></div></div>
+      <div class="stat-card"><div class="stat-icon amber">📝</div><div class="stat-info"><p>${DATA.notes.length}</p><span>Notes saisies</span></div></div>
+      <div class="stat-card"><div class="stat-icon red">📅</div><div class="stat-info"><p>${DATA.absences.filter(a => !a.justifie).length}</p><span>Absences non just.</span></div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><h3>📅 Absences récentes</h3></div>
+        <div class="card-body" style="padding:0;">
+          ${DATA.absences.slice(0,4).map(a => { const el = getEleve(a.eleve_id); return `
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:${avatarColor(a.eleve_id)};display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;">${initials(el.nom,el.prenom)}</div>
+            <div style="flex:1;"><p style="font-size:13px;font-weight:600;">${el.prenom} ${el.nom}</p><p style="font-size:12px;color:var(--text2);">${fmtDate(a.date)} • ${a.type}</p></div>
+            ${a.justifie ? '<span class="badge badge-green">Justifiée</span>' : '<span class="badge badge-red">Non justifiée</span>'}
+          </div>`; }).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>📚 Mes devoirs</h3></div>
+        <div class="card-body" style="padding:0;">
+          ${DATA.devoirs.filter(d => d.enseignant_id === 1).map(d => `
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
+            <p style="font-size:13px;font-weight:600;">${d.titre}</p>
+            <p style="font-size:12px;color:var(--text2);">${getMatiere(d.matiere_id).nom} • ${getClasse(d.classe_id).nom}</p>
+            <p style="font-size:11px;color:var(--danger);">⏰ ${fmtDate(d.date_limite)}</p>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return `
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-icon blue">🎒</div><div class="stat-info"><p>${totalEleves}</p><span>Élèves actifs</span></div></div>
+    <div class="stat-card"><div class="stat-icon amber">👨‍🏫</div><div class="stat-info"><p>${totalEnseignants}</p><span>Enseignants</span></div></div>
+    <div class="stat-card"><div class="stat-icon green">👪</div><div class="stat-info"><p>${totalParents}</p><span>Parents</span></div></div>
+    <div class="stat-card"><div class="stat-icon purple">🏫</div><div class="stat-info"><p>${totalClasses}</p><span>Classes</span></div></div>
+    <div class="stat-card"><div class="stat-icon red">📅</div><div class="stat-info"><p>${absNonJustif}</p><span>Absences non just.</span></div></div>
+    <div class="stat-card"><div class="stat-icon amber">💰</div><div class="stat-info"><p>${paiementsEnAttente}</p><span>Paiements en attente</span></div></div>
+  </div>
+  <div class="grid-2" style="margin-bottom:20px;">
+    <div class="card">
+      <div class="card-header"><h3>📊 Effectifs par classe</h3></div>
+      <div class="card-body">
+        <div class="bar-chart">${barsHtml}</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>💰 État des paiements</h3></div>
+      <div class="card-body">
+        ${['payé','en attente','impayé'].map(s => {
+          const count = DATA.paiements.filter(p => p.statut === s).length;
+          const pct = Math.round(count / DATA.paiements.length * 100);
+          const colors = { payé: 'var(--accent2)', 'en attente': 'var(--accent)', impayé: 'var(--danger)' };
+          return `<div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:13px;font-weight:600;text-transform:capitalize;">${s}</span>
+              <span style="font-size:13px;color:var(--text2);">${count} (${pct}%)</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${colors[s]}"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><h3>💬 Messages récents</h3><button class="btn btn-outline btn-sm" onclick="showPage('messages')">Voir tout</button></div>
+      <div class="card-body" style="padding:0;">
+        ${DATA.messages.slice(0,3).map(m => `
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;${!m.lu?'background:#eff6ff;':''}">
+          <div style="width:34px;height:34px;border-radius:50%;background:${avatarColor(m.id)};display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;flex-shrink:0;">${m.de[0]}</div>
+          <div style="flex:1;min-width:0;"><p style="font-size:13px;font-weight:600;">${m.de}</p><p style="font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.sujet}</p></div>
+          <span style="font-size:11px;color:var(--text3);">${fmtDate(m.date)}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>📢 Annonces récentes</h3><button class="btn btn-outline btn-sm" onclick="showPage('annonces')">Voir tout</button></div>
+      <div class="card-body" style="padding:0;">
+        ${DATA.annonces.map(a => `
+        <div class="announce-item ${a.type}" style="margin:8px;margin-bottom:0;">
+          <h4>${a.titre}</h4>
+          <p>${a.corps.substring(0,70)}...</p>
+          <p class="meta">👤 ${a.auteur} • ${fmtDate(a.date)}</p>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ELEVES
+function pageEleves() {
+  const eleves = currentRole === 'parent'
+    ? DATA.eleves.filter(e => e.parent_id === 1)
+    : DATA.eleves;
+  
+  return `
+  <div class="card">
+    <div class="card-header">
+      <h3>👥 Liste des élèves (${eleves.length})</h3>
+      ${currentRole === 'admin' ? `<button class="btn btn-primary btn-sm" onclick="modalNouvelEleve()">+ Ajouter</button>` : ''}
+    </div>
+    <div class="card-body">
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Rechercher par nom, matricule..." oninput="filterTable(this, 'eleves-table')">
+        </div>
+        ${currentRole === 'admin' ? `<select onchange="filterByClasse(this)" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;">
+          <option value="">Toutes les classes</option>
+          ${DATA.classes.map(c => `<option value="${c.id}">${c.nom}</option>`).join('')}
+        </select>` : ''}
+      </div>
+      <div class="table-wrap">
+        <table id="eleves-table">
+          <thead><tr>
+            <th>Élève</th><th>Matricule</th><th>Classe</th><th>Âge</th><th>Sexe</th>
+            ${currentRole !== 'parent' ? '<th>Parent</th>' : ''}
+            <th>Statut</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            ${eleves.map(e => {
+              const cls = getClasse(e.classe_id);
+              const par = getParent(e.parent_id);
+              return `<tr>
+                <td><div class="avatar-info">
+                  <div class="avatar" style="background:${avatarColor(e.id)}">${initials(e.nom,e.prenom)}</div>
+                  <div><p class="name">${e.prenom} ${e.nom}</p></div>
+                </div></td>
+                <td><code style="font-size:12px;background:var(--surface2);padding:2px 6px;border-radius:4px;">${e.matricule}</code></td>
+                <td><span class="badge badge-blue">${cls.nom || '–'}</span></td>
+                <td>${age(e.dob)} ans</td>
+                <td>${e.sexe === 'F' ? '♀️' : '♂️'}</td>
+                ${currentRole !== 'parent' ? `<td>${par.prenom || ''} ${par.nom || ''}</td>` : ''}
+                <td>${e.statut === 'actif' ? '<span class="badge badge-green">Actif</span>' : '<span class="badge badge-red">Inactif</span>'}</td>
+                <td style="display:flex;gap:6px;">
+                  <button class="btn btn-outline btn-sm" onclick="modalEleveDetail(${e.id})">👁️</button>
+                  ${currentRole === 'admin' ? `<button class="btn btn-sm" style="background:var(--surface2);border:1px solid var(--border);" onclick="modalEditerEleve(${e.id})">✏️</button>` : ''}
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ENSEIGNANTS
+function pageEnseignants() {
+  return `
+  <div class="card">
+    <div class="card-header">
+      <h3>👨‍🏫 Enseignants (${DATA.enseignants.length})</h3>
+      ${currentRole === 'admin' ? `<button class="btn btn-primary btn-sm" onclick="openModal('Ajouter un enseignant', formEnseignant())">+ Ajouter</button>` : ''}
+    </div>
+    <div class="card-body">
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Rechercher..." oninput="filterTable(this,'ens-table')">
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="ens-table">
+          <thead><tr><th>Enseignant</th><th>Email</th><th>Téléphone</th><th>Matières</th><th>Classes</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${DATA.enseignants.map(e => `<tr>
+              <td><div class="avatar-info">
+                <div class="avatar" style="background:${avatarColor(e.id)}">${initials(e.nom,e.prenom)}</div>
+                <div><p class="name">${e.prenom} ${e.nom}</p></div>
+              </div></td>
+              <td>${e.email}</td>
+              <td>${e.tel}</td>
+              <td>${e.matieres.map(m => `<span class="badge badge-blue" style="margin:1px;">${getMatiere(m).code}</span>`).join('')}</td>
+              <td>${e.classes.map(c => `<span class="badge badge-gray" style="margin:1px;">${getClasse(c).nom}</span>`).join('')}</td>
+              <td>${e.statut === 'actif' ? '<span class="badge badge-green">Actif</span>' : '<span class="badge badge-red">Inactif</span>'}</td>
+              <td><button class="btn btn-outline btn-sm" onclick="alert('Profil enseignant')">👁️</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// PARENTS
+function pageParents() {
+  return `
+  <div class="card">
+    <div class="card-header">
+      <h3>👪 Parents / Tuteurs (${DATA.parents.length})</h3>
+      ${currentRole === 'admin' ? `<button class="btn btn-primary btn-sm" onclick="openModal('Ajouter un parent', formParent())">+ Ajouter</button>` : ''}
+    </div>
+    <div class="card-body">
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Rechercher..." oninput="filterTable(this,'par-table')">
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="par-table">
+          <thead><tr><th>Parent</th><th>Email</th><th>Téléphone</th><th>Lien</th><th>Enfants</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${DATA.parents.map(p => {
+              const enfants = DATA.eleves.filter(e => e.parent_id === p.id);
+              return `<tr>
+                <td><div class="avatar-info">
+                  <div class="avatar" style="background:${avatarColor(p.id)}">${initials(p.nom,p.prenom)}</div>
+                  <div><p class="name">${p.prenom} ${p.nom}</p></div>
+                </div></td>
+                <td>${p.email}</td>
+                <td>${p.tel}</td>
+                <td><span class="badge badge-purple">${p.lien}</span></td>
+                <td>${enfants.map(e => `<span style="font-size:12px;color:var(--text2);">${e.prenom}</span>`).join(', ')}</td>
+                <td>${p.statut === 'actif' ? '<span class="badge badge-green">Actif</span>' : '<span class="badge badge-red">Inactif</span>'}</td>
+                <td style="display:flex;gap:6px;">
+                  <button class="btn btn-outline btn-sm">👁️</button>
+                  ${currentRole === 'admin' ? `<button class="btn btn-sm" style="background:var(--surface2);border:1px solid var(--border);">✉️</button>` : ''}
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// CLASSES
+function pageClasses() {
+  return `
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(this,'tab-classes')">Classes</button>
+    <button class="tab" onclick="switchTab(this,'tab-matieres')">Matières</button>
+  </div>
+  <div id="tab-classes">
+    <div class="stats-grid" style="margin-bottom:20px;">
+      ${DATA.classes.map(c => `
+      <div class="card" style="padding:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+          <div>
+            <p style="font-size:20px;font-weight:800;font-family:'Syne',sans-serif;">${c.nom}</p>
+            <p style="font-size:12px;color:var(--text2);">Niveau: ${c.niveau}</p>
+          </div>
+          <span class="badge badge-blue">${c.effectif}/${c.capacite}</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${Math.round(c.effectif/c.capacite*100)}%;background:var(--primary-light)"></div>
+        </div>
+        <p style="font-size:11px;color:var(--text3);margin-top:6px;">${Math.round(c.effectif/c.capacite*100)}% de remplissage</p>
+      </div>`).join('')}
+    </div>
+    ${currentRole === 'admin' ? `<button class="btn btn-primary" onclick="openModal('Nouvelle classe', formClasse())">+ Ajouter une classe</button>` : ''}
+  </div>
+  <div id="tab-matieres" style="display:none;">
+    <div class="card">
+      <div class="card-header">
+        <h3>📚 Matières</h3>
+        ${currentRole === 'admin' ? `<button class="btn btn-primary btn-sm" onclick="openModal('Nouvelle matière', formMatiere())">+ Ajouter</button>` : ''}
+      </div>
+      <div class="card-body">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Matière</th><th>Code</th><th>Coefficient</th><th>Enseignants</th></tr></thead>
+            <tbody>
+              ${DATA.matieres.map(m => {
+                const ens = DATA.enseignants.filter(e => e.matieres.includes(m.id));
+                return `<tr>
+                  <td><strong>${m.nom}</strong></td>
+                  <td><code style="background:var(--surface2);padding:2px 8px;border-radius:4px;">${m.code}</code></td>
+                  <td><span class="badge badge-blue">${m.coeff}</span></td>
+                  <td>${ens.map(e => `${e.prenom} ${e.nom}`).join(', ') || '–'}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// NOTES
+function pageNotes() {
+  if (currentRole === 'parent') {
+    const enfants = DATA.eleves.filter(e => e.parent_id === 1);
+    return `
+    ${enfants.map(eleve => {
+      const notes = DATA.notes.filter(n => n.eleve_id === eleve.id);
+      const moy = moyenne(eleve.id);
+      return `
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="avatar-info">
+            <div class="avatar" style="background:${avatarColor(eleve.id)}">${initials(eleve.nom,eleve.prenom)}</div>
+            <div><h3>${eleve.prenom} ${eleve.nom}</h3><span style="font-size:12px;color:var(--text2);">${getClasse(eleve.classe_id).nom}</span></div>
+          </div>
+          <div style="text-align:right;">
+            <p style="font-size:22px;font-weight:800;font-family:'Syne',sans-serif;">${moy || 'N/A'}/20</p>
+            <p>${mention(moy)}</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Matière</th><th>Type</th><th>Note</th><th>Date</th></tr></thead>
+              <tbody>
+                ${notes.length ? notes.map(n => `<tr>
+                  <td>${getMatiere(n.matiere_id).nom}</td>
+                  <td><span class="badge badge-gray">${n.type}</span></td>
+                  <td><strong style="font-size:15px;color:${n.note>=10?'var(--accent2)':'var(--danger)'};">${n.note}/20</strong></td>
+                  <td>${fmtDate(n.date)}</td>
+                </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--text3);">Aucune note disponible</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}`;
+  }
+
+  return `
+  <div class="card">
+    <div class="card-header">
+      <h3>📝 Gestion des Notes</h3>
+      <button class="btn btn-primary btn-sm" onclick="openModal('Saisir une note', formNote())">+ Saisir note</button>
+    </div>
+    <div class="card-body">
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Rechercher..." oninput="filterTable(this,'notes-table')">
+        </div>
+        <select style="padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;">
+          <option>Tous trimestres</option><option>Trimestre 1</option><option>Trimestre 2</option><option>Trimestre 3</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table id="notes-table">
+          <thead><tr><th>Élève</th><th>Classe</th><th>Matière</th><th>Type</th><th>Note</th><th>Trimestre</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${DATA.notes.map(n => {
+              const el = getEleve(n.eleve_id);
+              return `<tr>
+                <td>${el.prenom} ${el.nom}</td>
+                <td><span class="badge badge-blue">${getClasse(el.classe_id).nom}</span></td>
+                <td>${getMatiere(n.matiere_id).nom}</td>
+                <td><span class="badge badge-gray">${n.type}</span></td>
+                <td><strong style="font-size:15px;color:${n.note>=10?'var(--accent2)':'var(--danger)'};">${n.note}/20</strong></td>
+                <td>T${n.trimestre}</td>
+                <td>${fmtDate(n.date)}</td>
+                <td><button class="btn btn-sm btn-danger" onclick="deleteNote(${n.id})">🗑️</button></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:20px;">
+    <div class="card-header"><h3>📊 Moyennes par élève</h3></div>
+    <div class="card-body">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Élève</th><th>Classe</th><th>Moyenne</th><th>Mention</th></tr></thead>
+          <tbody>
+            ${DATA.eleves.filter(e => e.statut === 'actif').map(e => {
+              const moy = moyenne(e.id);
+              return `<tr>
+                <td><div class="avatar-info">
+                  <div class="avatar" style="background:${avatarColor(e.id)}">${initials(e.nom,e.prenom)}</div>
+                  <div>${e.prenom} ${e.nom}</div>
+                </div></td>
+                <td>${getClasse(e.classe_id).nom}</td>
+                <td><strong>${moy || '–'}/20</strong></td>
+                <td>${moy ? mention(moy) : '–'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// BULLETINS
+function pageBulletins() {
+  return `
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header"><h3>📄 Générer un bulletin</h3></div>
+    <div class="card-body">
+      <div class="form-grid" style="max-width:500px;margin-bottom:16px;">
+        <div class="form-group">
+          <label>Élève</label>
+          <select id="bulletin-eleve">
+            ${DATA.eleves.map(e => `<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Trimestre</label>
+          <select id="bulletin-trim"><option value="1">Trimestre 1</option><option value="2" selected>Trimestre 2</option><option value="3">Trimestre 3</option></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="genererBulletin()">📄 Générer le bulletin</button>
+    </div>
+  </div>
+  <div id="bulletin-result"></div>`;
+}
+
+function genererBulletin() {
+  const eleveId = parseInt(document.getElementById('bulletin-eleve').value);
+  const trim = document.getElementById('bulletin-trim').value;
+  const eleve = getEleve(eleveId);
+  const cls = getClasse(eleve.classe_id);
+  const par = getParent(eleve.parent_id);
+  const notes = DATA.notes.filter(n => n.eleve_id === eleveId);
+  const moy = moyenne(eleveId);
+  
+  document.getElementById('bulletin-result').innerHTML = `
+  <div class="bulletin">
+    <div class="bulletin-header">
+      <h2>🏫 ${DATA.school.name}</h2>
+      <p style="color:var(--text2);margin-top:4px;">${DATA.school.address} • ${DATA.school.email}</p>
+      <h3 style="margin-top:12px;font-size:16px;">BULLETIN SCOLAIRE – TRIMESTRE ${trim}</h3>
+      <p style="font-size:13px;color:var(--text2);">Année scolaire: ${DATA.school.annee}</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div><p style="font-size:13px;color:var(--text2);">Nom de l'élève</p><p style="font-weight:700;">${eleve.prenom} ${eleve.nom}</p></div>
+      <div><p style="font-size:13px;color:var(--text2);">Matricule</p><p style="font-weight:700;">${eleve.matricule}</p></div>
+      <div><p style="font-size:13px;color:var(--text2);">Classe</p><p style="font-weight:700;">${cls.nom}</p></div>
+      <div><p style="font-size:13px;color:var(--text2);">Parent</p><p style="font-weight:700;">${par.prenom} ${par.nom}</p></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Matière</th><th>Coeff.</th><th>Note/20</th><th>Appréciation</th></tr></thead>
+        <tbody>
+          ${DATA.matieres.map(m => {
+            const note = notes.find(n => n.matiere_id === m.id);
+            const appr = note ? (note.note >= 16 ? '😊 Excellent' : note.note >= 14 ? '👍 Bien' : note.note >= 10 ? '✅ Passable' : '⚠️ À améliorer') : '';
+            return `<tr>
+              <td>${m.nom}</td>
+              <td>${m.coeff}</td>
+              <td><strong style="color:${note ? (note.note>=10?'var(--accent2)':'var(--danger)') : 'var(--text3)'};">${note ? note.note : '–'}</strong></td>
+              <td style="font-size:13px;color:var(--text2);">${appr}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+        <tfoot>
+          <tr style="background:var(--primary);color:white;">
+            <td colspan="2"><strong>Moyenne Générale</strong></td>
+            <td colspan="2"><strong>${moy || '–'}/20 ${moy ? '– ' + ['Insuffisant','Passable','Assez Bien','Bien','Excellent'][Math.min(4,Math.floor(parseFloat(moy)/4))] : ''}</strong></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div style="margin-top:16px;padding:12px;background:var(--surface2);border-radius:8px;">
+      <p style="font-size:13px;font-weight:600;">Appréciation générale:</p>
+      <p style="font-size:13px;color:var(--text2);margin-top:4px;">${moy ? (parseFloat(moy)>=14 ? 'Bon trimestre. Continuez ainsi !' : parseFloat(moy)>=10 ? 'Des efforts sont encore nécessaires.' : 'Résultats insuffisants. Un soutien est recommandé.') : 'Pas encore de notes.'}</p>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:20px;gap:10px;">
+      <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ Imprimer</button>
+      <button class="btn btn-primary btn-sm">📥 Télécharger PDF</button>
+    </div>
+  </div>`;
+}
+
+// ABSENCES
+function pageAbsences() {
+  return `
+  <div class="card">
+    <div class="card-header">
+      <h3>📅 Gestion des Absences (${DATA.absences.length})</h3>
+      ${currentRole !== 'parent' ? `<button class="btn btn-primary btn-sm" onclick="openModal('Enregistrer une absence', formAbsence())">+ Enregistrer</button>` : ''}
+    </div>
+    <div class="card-body">
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <div class="stat-card" style="flex:1;min-width:130px;padding:14px;">
+          <div class="stat-icon red" style="width:36px;height:36px;border-radius:8px;font-size:16px;">📅</div>
+          <div class="stat-info"><p style="font-size:20px;">${DATA.absences.filter(a=>a.type==='Absence').length}</p><span>Absences</span></div>
+        </div>
+        <div class="stat-card" style="flex:1;min-width:130px;padding:14px;">
+          <div class="stat-icon amber" style="width:36px;height:36px;border-radius:8px;font-size:16px;">⏰</div>
+          <div class="stat-info"><p style="font-size:20px;">${DATA.absences.filter(a=>a.type==='Retard').length}</p><span>Retards</span></div>
+        </div>
+        <div class="stat-card" style="flex:1;min-width:130px;padding:14px;">
+          <div class="stat-icon green" style="width:36px;height:36px;border-radius:8px;font-size:16px;">✅</div>
+          <div class="stat-info"><p style="font-size:20px;">${DATA.absences.filter(a=>a.justifie).length}</p><span>Justifiées</span></div>
+        </div>
+        <div class="stat-card" style="flex:1;min-width:130px;padding:14px;">
+          <div class="stat-icon red" style="width:36px;height:36px;border-radius:8px;font-size:16px;">❌</div>
+          <div class="stat-info"><p style="font-size:20px;">${DATA.absences.filter(a=>!a.justifie).length}</p><span>Non justifiées</span></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Élève</th><th>Classe</th><th>Date</th><th>Type</th><th>Justifiée</th><th>Motif</th><th>Notifié</th>${currentRole !== 'parent' ? '<th>Actions</th>' : ''}</tr></thead>
+          <tbody>
+            ${DATA.absences.map(a => {
+              const el = getEleve(a.eleve_id);
+              return `<tr>
+                <td><div class="avatar-info">
+                  <div class="avatar" style="background:${avatarColor(a.eleve_id)};width:28px;height:28px;font-size:11px;">${initials(el.nom,el.prenom)}</div>
+                  <div>${el.prenom} ${el.nom}</div>
+                </div></td>
+                <td>${getClasse(el.classe_id).nom}</td>
+                <td>${fmtDate(a.date)}</td>
+                <td><span class="badge ${a.type==='Absence'?'badge-red':'badge-amber'}">${a.type}</span></td>
+                <td>${a.justifie ? '<span class="badge badge-green">Oui</span>' : '<span class="badge badge-red">Non</span>'}</td>
+                <td style="font-size:13px;color:var(--text2);">${a.motif || '–'}</td>
+                <td>${a.notifie ? '✅' : '🔴'}</td>
+                ${currentRole !== 'parent' ? `<td><button class="btn btn-outline btn-sm" onclick="justifierAbsence(${a.id})">✏️</button></td>` : ''}
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// DEVOIRS
+function pageDevoirs() {
+  return `
+  <div class="card">
+    <div class="card-header">
+      <h3>📚 Devoirs & Exercices (${DATA.devoirs.length})</h3>
+      ${currentRole !== 'parent' ? `<button class="btn btn-primary btn-sm" onclick="openModal('Publier un devoir', formDevoir())">+ Publier</button>` : ''}
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+        ${DATA.devoirs.map(d => {
+          const mat = getMatiere(d.matiere_id);
+          const cls = getClasse(d.classe_id);
+          const ens = DATA.enseignants.find(e => e.id === d.enseignant_id) || {};
+          const deadline = new Date(d.date_limite);
+          const isUrgent = (deadline - new Date()) < 3 * 24 * 3600 * 1000;
+          return `
+          <div class="card" style="border-top:4px solid ${avatarColor(d.matiere_id)};">
+            <div class="card-body">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <span class="badge badge-blue">${mat.code}</span>
+                ${isUrgent ? '<span class="badge badge-red">⚡ Urgent</span>' : ''}
+              </div>
+              <h4 style="font-size:15px;margin-bottom:6px;">${d.titre}</h4>
+              <p style="font-size:13px;color:var(--text2);margin-bottom:10px;">${d.description}</p>
+              <div style="font-size:12px;color:var(--text3);display:flex;flex-direction:column;gap:3px;">
+                <span>🏫 ${cls.nom}</span>
+                <span>👨‍🏫 ${ens.prenom || ''} ${ens.nom || ''}</span>
+                <span style="color:${isUrgent?'var(--danger)':'var(--text3)'};">⏰ ${fmtDate(d.date_limite)}</span>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// EMPLOI DU TEMPS
+function pageEmploiDuTemps() {
+  const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+  const heures = ['7h-8h', '8h-9h', '9h-10h', '10h-11h', '11h-12h', '14h-15h', '15h-16h', '16h-17h'];
+  
+  const schedule = [
+    [{ label: 'Mathématiques', type:'math' }, { label: 'Français', type:'lang' }, null, { label: 'Sciences', type:'science' }, { label: 'Mathématiques', type:'math' }],
+    [{ label: 'Français', type:'lang' }, { label: 'Histoire-Géo', type:'' }, { label: 'Anglais', type:'lang' }, null, { label: 'Français', type:'lang' }],
+    [{ label: 'Sciences', type:'science' }, null, { label: 'Mathématiques', type:'math' }, { label: 'Français', type:'lang' }, null],
+    [null, { label: 'EPS', type:'science' }, { label: 'Histoire-Géo', type:'' }, { label: 'Mathématiques', type:'math' }, { label: 'Sciences', type:'science' }],
+    [{ label: 'Anglais', type:'lang' }, { label: 'Mathématiques', type:'math' }, { label: 'Français', type:'lang' }, null, { label: 'EPS', type:'science' }],
+    [null, null, null, null, null],
+    [{ label: 'Révision', type:'' }, null, { label: 'Mathématiques', type:'math' }, null, { label: 'Français', type:'lang' }],
+    [null, null, null, null, null],
+  ];
+
+  return `
+  <div class="card">
+    <div class="card-header">
+      <h3>🕐 Emploi du temps – CE1 (2025-2026)</h3>
+      <div style="display:flex;gap:8px;">
+        <select style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;">
+          ${DATA.classes.map(c => `<option value="${c.id}">${c.nom}</option>`).join('')}
+        </select>
+        ${currentRole === 'admin' ? `<button class="btn btn-primary btn-sm">✏️ Modifier</button>` : ''}
+      </div>
+    </div>
+    <div class="card-body">
+      <div style="overflow-x:auto;">
+        <div class="timetable" style="min-width:600px;">
+          <div class="tt-header">Heure</div>
+          ${jours.map(j => `<div class="tt-header">${j}</div>`).join('')}
+          ${heures.map((h, hi) => `
+            <div class="tt-hour">${h}</div>
+            ${jours.map((j, ji) => {
+              const slot = schedule[hi]?.[ji];
+              return `<div class="tt-cell">${slot ? `<div class="tt-slot ${slot.type}">${slot.label}</div>` : ''}</div>`;
+            }).join('')}
+          `).join('')}
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;"><div style="width:12px;height:12px;border-radius:2px;background:#dbeafe;border-left:3px solid var(--primary-light);"></div><span style="font-size:12px;">Mathématiques</span></div>
+        <div style="display:flex;align-items:center;gap:6px;"><div style="width:12px;height:12px;border-radius:2px;background:#fffbeb;border-left:3px solid var(--accent);"></div><span style="font-size:12px;">Math</span></div>
+        <div style="display:flex;align-items:center;gap:6px;"><div style="width:12px;height:12px;border-radius:2px;background:#f0fdf4;border-left:3px solid var(--accent2);"></div><span style="font-size:12px;">Sciences</span></div>
+        <div style="display:flex;align-items:center;gap:6px;"><div style="width:12px;height:12px;border-radius:2px;background:#fdf4ff;border-left:3px solid #a855f7;"></div><span style="font-size:12px;">Langues</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// MESSAGES
+function pageMessages() {
+  return `
+  <div class="grid-2" style="align-items:start;">
+    <div class="card">
+      <div class="card-header">
+        <h3>💬 Messages (${DATA.messages.length})</h3>
+        <button class="btn btn-primary btn-sm" onclick="openModal('Nouveau message', formMessage())">✏️ Composer</button>
+      </div>
+      <div class="card-body" style="padding:8px;">
+        <div class="msg-list">
+          ${DATA.messages.map(m => `
+          <div class="msg-item ${!m.lu ? 'unread' : ''}" onclick="showMessage(${m.id})">
+            <div class="msg-avatar">${m.de[0]}</div>
+            <div class="msg-body">
+              <p class="msg-from">${m.de} <span style="font-size:11px;font-weight:400;color:var(--text3);">${m.de_role}</span></p>
+              <p class="msg-subject">${m.sujet}</p>
+              <p style="font-size:12px;color:var(--text3);">${m.corps.substring(0,60)}...</p>
+            </div>
+            <span class="msg-date">${fmtDate(m.date)}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card" id="msg-detail">
+      <div class="card-body">
+        <div class="empty-state"><div class="emoji">💬</div><p>Sélectionnez un message</p></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showMessage(id) {
+  const m = DATA.messages.find(x => x.id === id);
+  if (!m) return;
+  m.lu = true;
+  document.getElementById('msg-detail').innerHTML = `
+  <div class="card-header"><h3>${m.sujet}</h3></div>
+  <div class="card-body">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:${avatarColor(m.id)};display:flex;align-items:center;justify-content:center;color:white;font-weight:700;">${m.de[0]}</div>
+      <div>
+        <p style="font-weight:700;">${m.de}</p>
+        <p style="font-size:12px;color:var(--text2);">${m.de_role} • ${fmtDate(m.date)}</p>
+      </div>
+    </div>
+    <p style="font-size:14px;line-height:1.7;color:var(--text);">${m.corps}</p>
+    <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
+      <textarea style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;resize:vertical;height:100px;" placeholder="Votre réponse..."></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+        <button class="btn btn-primary btn-sm" onclick="alert('Réponse envoyée !')">Envoyer ↗</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ANNONCES
+function pageAnnonces() {
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <h3 style="font-size:16px;font-weight:700;">📢 Annonces (${DATA.annonces.length})</h3>
+    ${currentRole === 'admin' ? `<button class="btn btn-primary" onclick="openModal('Nouvelle annonce', formAnnonce())">+ Nouvelle annonce</button>` : ''}
+  </div>
+  ${DATA.annonces.map(a => `
+  <div class="announce-item ${a.type}" style="margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <h4>${a.titre}</h4>
+      <span class="badge ${a.type==='urgent'?'badge-red':a.type==='info'?'badge-green':'badge-blue'}">${a.type}</span>
+    </div>
+    <p style="font-size:14px;line-height:1.6;margin-top:8px;">${a.corps}</p>
+    <p class="meta">👤 ${a.auteur} • 📅 ${fmtDate(a.date)}</p>
+    ${currentRole === 'admin' ? `<div style="margin-top:8px;display:flex;gap:8px;">
+      <button class="btn btn-outline btn-sm">✏️ Modifier</button>
+      <button class="btn btn-danger btn-sm">🗑️ Supprimer</button>
+    </div>` : ''}
+  </div>`).join('')}`;
+}
+
+// PAIEMENTS
+function pagePaiements() {
+  const total = DATA.paiements.filter(p => p.statut === 'payé').reduce((s, p) => s + p.montant, 0);
+  const attente = DATA.paiements.filter(p => p.statut !== 'payé').reduce((s, p) => s + p.montant, 0);
+  
+  return `
+  <div class="stats-grid" style="margin-bottom:20px;">
+    <div class="stat-card"><div class="stat-icon green">💚</div><div class="stat-info"><p>${fmt(total)}</p><span>FCFA perçus</span></div></div>
+    <div class="stat-card"><div class="stat-icon amber">⏳</div><div class="stat-info"><p>${fmt(attente)}</p><span>FCFA en attente</span></div></div>
+    <div class="stat-card"><div class="stat-icon blue">🧾</div><div class="stat-info"><p>${DATA.paiements.filter(p => p.statut === 'payé').length}</p><span>Paiements reçus</span></div></div>
+    <div class="stat-card"><div class="stat-icon red">❌</div><div class="stat-info"><p>${DATA.paiements.filter(p => p.statut === 'impayé').length}</p><span>Impayés</span></div></div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <h3>💰 Historique des paiements</h3>
+      ${currentRole === 'admin' ? `<button class="btn btn-primary btn-sm" onclick="openModal('Enregistrer un paiement', formPaiement())">+ Enregistrer</button>` : ''}
+    </div>
+    <div class="card-body">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Élève</th><th>Classe</th><th>Type</th><th>Montant</th><th>Date</th><th>Statut</th><th>Reçu</th></tr></thead>
+          <tbody>
+            ${DATA.paiements.map(p => {
+              const el = getEleve(p.eleve_id);
+              return `<tr>
+                <td>${el.prenom} ${el.nom}</td>
+                <td>${getClasse(el.classe_id).nom}</td>
+                <td style="font-size:13px;">${p.type}</td>
+                <td><strong>${fmt(p.montant)} FCFA</strong></td>
+                <td>${fmtDate(p.date) || '–'}</td>
+                <td>${p.statut === 'payé' ? '<span class="badge badge-green">✅ Payé</span>' : p.statut === 'en attente' ? '<span class="badge badge-amber">⏳ En attente</span>' : '<span class="badge badge-red">❌ Impayé</span>'}</td>
+                <td>${p.recu ? `<button class="btn btn-outline btn-sm" onclick="alert('Reçu: ${p.recu}')">🧾 ${p.recu}</button>` : '–'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ETABLISSEMENT
+function pageEtablissement() {
+  return `
+  <div class="grid-2" style="align-items:start;">
+    <div class="card">
+      <div class="card-header"><h3>🏫 Informations de l'école</h3><button class="btn btn-outline btn-sm">✏️ Modifier</button></div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          ${[
+            ['🏫 Nom', DATA.school.name],
+            ['📍 Adresse', DATA.school.address],
+            ['📞 Téléphone', DATA.school.phone],
+            ['✉️ Email', DATA.school.email],
+            ['📅 Année scolaire', DATA.school.annee],
+          ].map(([k,v]) => `
+          <div style="display:flex;gap:12px;">
+            <span style="font-size:13px;color:var(--text2);min-width:130px;">${k}</span>
+            <span style="font-size:14px;font-weight:600;">${v}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>📊 Statistiques générales</h3></div>
+      <div class="card-body">
+        ${[
+          ['Total élèves', DATA.eleves.length, 'badge-blue'],
+          ['Élèves actifs', DATA.eleves.filter(e=>e.statut==='actif').length, 'badge-green'],
+          ['Enseignants', DATA.enseignants.length, 'badge-blue'],
+          ['Parents enregistrés', DATA.parents.length, 'badge-blue'],
+          ['Classes', DATA.classes.length, 'badge-purple'],
+          ['Matières', DATA.matieres.length, 'badge-amber'],
+        ].map(([label, val, cls]) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:13px;">${label}</span>
+          <span class="badge ${cls}">${val}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// FORMS (for modals)
+// ============================================================
+function formNouvelEleve() {
+  return `<div class="form-grid">
+    <div class="form-group"><label>Prénom</label><input type="text" placeholder="Prénom"></div>
+    <div class="form-group"><label>Nom</label><input type="text" placeholder="Nom"></div>
+    <div class="form-group"><label>Date de naissance</label><input type="date"></div>
+    <div class="form-group"><label>Sexe</label><select><option>Masculin</option><option>Féminin</option></select></div>
+    <div class="form-group"><label>Classe</label><select>${DATA.classes.map(c=>`<option value="${c.id}">${c.nom}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Parent</label><select>${DATA.parents.map(p=>`<option value="${p.id}">${p.prenom} ${p.nom}</option>`).join('')}</select></div>
+  </div>`;
+}
+function formEnseignant() {
+  return `<div class="form-grid">
+    <div class="form-group"><label>Prénom</label><input type="text" placeholder="Prénom"></div>
+    <div class="form-group"><label>Nom</label><input type="text" placeholder="Nom"></div>
+    <div class="form-group full"><label>Email</label><input type="email" placeholder="email@feba.edu"></div>
+    <div class="form-group full"><label>Téléphone</label><input type="tel" placeholder="+229 ..."></div>
+  </div>`;
+}
+function formParent() {
+  return `<div class="form-grid">
+    <div class="form-group"><label>Prénom</label><input type="text"></div>
+    <div class="form-group"><label>Nom</label><input type="text"></div>
+    <div class="form-group full"><label>Email</label><input type="email"></div>
+    <div class="form-group"><label>Téléphone</label><input type="tel"></div>
+    <div class="form-group"><label>Lien</label><select><option>Père</option><option>Mère</option><option>Tuteur légal</option></select></div>
+    <div class="form-group full"><label>Adresse</label><input type="text"></div>
+  </div>`;
+}
+function formNote() {
+  return `<div class="form-grid">
+    <div class="form-group"><label>Élève</label><select>${DATA.eleves.map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Matière</label><select>${DATA.matieres.map(m=>`<option value="${m.id}">${m.nom}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Note /20</label><input type="number" min="0" max="20" step="0.5" placeholder="ex: 14.5"></div>
+    <div class="form-group"><label>Type</label><select><option>Devoir</option><option>Composition</option><option>Contrôle</option></select></div>
+    <div class="form-group"><label>Date</label><input type="date" value="2026-03-25"></div>
+    <div class="form-group"><label>Trimestre</label><select><option value="1">T1</option><option value="2" selected>T2</option><option value="3">T3</option></select></div>
+  </div>`;
+}
+function formAbsence() {
+  return `<div class="form-grid">
+    <div class="form-group full"><label>Élève</label><select>${DATA.eleves.map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Date</label><input type="date" value="2026-03-25"></div>
+    <div class="form-group"><label>Type</label><select><option>Absence</option><option>Retard</option></select></div>
+    <div class="form-group full"><label>Motif (optionnel)</label><input type="text" placeholder="Motif de l'absence..."></div>
+    <div class="form-group full"><label>Justifiée</label><select><option value="non">Non justifiée</option><option value="oui">Justifiée</option></select></div>
+  </div>`;
+}
+function formDevoir() {
+  return `<div class="form-grid">
+    <div class="form-group full"><label>Titre</label><input type="text" placeholder="Titre du devoir"></div>
+    <div class="form-group"><label>Matière</label><select>${DATA.matieres.map(m=>`<option value="${m.id}">${m.nom}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Classe</label><select>${DATA.classes.map(c=>`<option value="${c.id}">${c.nom}</option>`).join('')}</select></div>
+    <div class="form-group full"><label>Date limite</label><input type="date"></div>
+    <div class="form-group full"><label>Description</label><textarea style="height:80px;"></textarea></div>
+  </div>`;
+}
+function formMessage() {
+  return `<div class="form-grid">
+    <div class="form-group full"><label>Destinataire</label><select><option>Tous les parents</option>${DATA.parents.map(p=>`<option>${p.prenom} ${p.nom}</option>`).join('')}${DATA.enseignants.map(e=>`<option>${e.prenom} ${e.nom}</option>`).join('')}</select></div>
+    <div class="form-group full"><label>Sujet</label><input type="text" placeholder="Objet du message"></div>
+    <div class="form-group full"><label>Message</label><textarea style="height:120px;" placeholder="Votre message..."></textarea></div>
+  </div>`;
+}
+function formAnnonce() {
+  return `<div class="form-grid">
+    <div class="form-group full"><label>Titre</label><input type="text" placeholder="Titre de l'annonce"></div>
+    <div class="form-group full"><label>Contenu</label><textarea style="height:100px;" placeholder="Contenu..."></textarea></div>
+    <div class="form-group"><label>Type</label><select><option value="normal">Normal</option><option value="info">Info</option><option value="urgent">Urgent</option></select></div>
+  </div>`;
+}
+function formPaiement() {
+  return `<div class="form-grid">
+    <div class="form-group full"><label>Élève</label><select>${DATA.eleves.map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Montant (FCFA)</label><input type="number" placeholder="ex: 45000"></div>
+    <div class="form-group"><label>Date</label><input type="date" value="2026-03-25"></div>
+    <div class="form-group full"><label>Type de frais</label><input type="text" value="Frais scolaires T2"></div>
+  </div>`;
+}
+function formClasse() {
+  return `<div class="form-grid">
+    <div class="form-group"><label>Nom</label><input type="text" placeholder="ex: CP1"></div>
+    <div class="form-group"><label>Niveau</label><input type="text" placeholder="ex: CP"></div>
+    <div class="form-group full"><label>Capacité</label><input type="number" placeholder="ex: 30"></div>
+  </div>`;
+}
+function formMatiere() {
+  return `<div class="form-grid">
+    <div class="form-group"><label>Nom</label><input type="text" placeholder="ex: Mathématiques"></div>
+    <div class="form-group"><label>Code</label><input type="text" placeholder="ex: MATH"></div>
+    <div class="form-group full"><label>Coefficient</label><input type="number" min="1" max="5" placeholder="1-5"></div>
+  </div>`;
+}
+
+// ============================================================
+// MODAL HELPERS
+// ============================================================
+function openModal(title, body, footer = '') {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-footer').innerHTML = footer || `
+    <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+    <button class="btn btn-primary" onclick="saveModal()">Enregistrer</button>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModalOnOverlay(e) { if (e.target.id === 'modal-overlay') closeModal(); }
+function saveModal() {
+  closeModal();
+  showToast('✅ Enregistré avec succès !');
+}
+function modalNouvelEleve() { openModal('Nouvel élève', formNouvelEleve()); }
+function modalEleveDetail(id) {
+  const el = getEleve(id);
+  const cls = getClasse(el.classe_id);
+  const par = getParent(el.parent_id);
+  const moy = moyenne(id);
+  const abs = DATA.absences.filter(a => a.eleve_id === id).length;
+  openModal(`${el.prenom} ${el.nom}`, `
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="width:64px;height:64px;border-radius:50%;background:${avatarColor(el.id)};display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:22px;margin:0 auto 10px;">${initials(el.nom,el.prenom)}</div>
+      <h3>${el.prenom} ${el.nom}</h3>
+      <code style="font-size:12px;background:var(--surface2);padding:2px 8px;border-radius:4px;">${el.matricule}</code>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      ${[['Classe', cls.nom],['Sexe', el.sexe==='F'?'Féminin':'Masculin'],['Âge', age(el.dob)+' ans'],['Parent', par.prenom+' '+par.nom],['Moyenne', (moy||'N/A')+'/20'],['Absences', abs]].map(([k,v])=>`
+      <div style="padding:10px;background:var(--surface2);border-radius:8px;">
+        <p style="font-size:11px;color:var(--text3);">${k}</p>
+        <p style="font-weight:700;font-size:14px;">${v}</p>
+      </div>`).join('')}
+    </div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Fermer</button><button class="btn btn-primary" onclick="showPage('notes');closeModal();">Voir les notes</button>`
+  );
+}
+function modalEditerEleve(id) { openModal('Modifier l\'élève', formNouvelEleve()); }
+function deleteNote(id) { if(confirm('Supprimer cette note ?')) { DATA.notes = DATA.notes.filter(n=>n.id!==id); showPage('notes'); } }
+function justifierAbsence(id) { openModal('Justifier l\'absence', `<div class="form-group"><label>Motif</label><input type="text" placeholder="Motif..."></div>`); }
+
+// TOAST
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1a3c5e;color:white;padding:12px 20px;border-radius:10px;font-size:14px;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.2);font-family:DM Sans,sans-serif;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// TABLE FILTER
+function filterTable(input, tableId) {
+  const q = input.value.toLowerCase();
+  const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+  rows.forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function filterByClasse(select) {
+  const val = select.value;
+  const rows = document.querySelectorAll('#eleves-table tbody tr');
+  rows.forEach(r => {
+    if (!val) { r.style.display = ''; return; }
+    const cls = r.querySelector('.badge.badge-blue');
+    if (cls) {
+      const classeName = getClasse(parseInt(val)).nom;
+      r.style.display = cls.textContent === classeName ? '' : 'none';
+    }
+  });
+}
+
+// TAB SWITCH
+function switchTab(btn, targetId) {
+  const parent = btn.closest('.card, .content, #page-content');
+  parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  parent.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
+  const target = parent.querySelector('#' + targetId) || document.getElementById(targetId);
+  if (target) target.style.display = 'block';
+}
+
+// SIDEBAR TOGGLE
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// Responsive
+if (window.innerWidth < 768) {
+  document.getElementById('menu-btn').style.display = 'block';
+}
+</script>
+</body>
+</html>
