@@ -292,15 +292,38 @@
   .bar { width: 100%; background: var(--primary-light); border-radius: 4px 4px 0 0; transition: height .5s; min-height: 4px; }
   .bar-label { font-size: 11px; color: var(--text2); text-align: center; }
 
+  /* SIDEBAR OVERLAY (mobile) */
+  .sidebar-overlay {
+    display: none;
+    position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    z-index: 99; cursor: pointer;
+  }
+  .sidebar-overlay.visible { display: block; }
+
+  /* CLOSE BUTTON inside sidebar (mobile only) */
+  .sidebar-close {
+    display: none;
+    position: absolute; top: 14px; right: 12px;
+    background: rgba(255,255,255,.15); border: none; border-radius: 8px;
+    color: white; font-size: 18px; width: 32px; height: 32px;
+    align-items: center; justify-content: center; cursor: pointer;
+    line-height: 1;
+  }
+
   /* RESPONSIVE */
   @media (max-width: 768px) {
     :root { --sidebar-w: 0px; }
-    .sidebar { transform: translateX(-240px); width: 240px; transition: transform .3s; }
-    .sidebar.open { transform: translateX(0); --sidebar-w: 240px; }
-    .main { margin-left: 0; }
+    .sidebar {
+      transform: translateX(-240px); width: 240px;
+      transition: transform .3s; position: fixed; z-index: 100;
+    }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-close { display: flex; }
+    .main { margin-left: 0 !important; }
     .grid-2, .grid-3, .form-grid { grid-template-columns: 1fr; }
     .form-grid .full { grid-column: 1; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    #menu-btn { display: block !important; }
   }
 
   /* EMPLOI DU TEMPS */
@@ -377,16 +400,19 @@
       Se connecter
     </button>
     <p style="text-align:center; font-size:12px; color:var(--text3); margin-top:20px;">
-      Version Démo By M. Chris </Br>
-      Id & MP : admin@feba.edu / admin123
+      Démo : <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6d0c090004032d0b080f0c43080918">[email&#160;protected]</a> / admin123
     </p>
   </div>
 </div>
+
+<!-- SIDEBAR OVERLAY mobile -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <!-- MAIN APP -->
 <div id="app">
   <!-- SIDEBAR -->
   <nav class="sidebar" id="sidebar">
+    <button class="sidebar-close" onclick="closeSidebar()">✕</button>
     <div class="sidebar-brand">
       <div class="sidebar-brand-icon">F</div>
       <div class="sidebar-brand-text">
@@ -434,7 +460,7 @@
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ============================================================
 // DATA
 // ============================================================
@@ -1722,13 +1748,38 @@ function switchTab(btn, targetId) {
 
 // SIDEBAR TOGGLE
 function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('visible');
 }
 
-// Responsive
-if (window.innerWidth < 768) {
-  document.getElementById('menu-btn').style.display = 'block';
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('visible');
 }
+
+// Responsive: show menu button on mobile
+function initResponsive() {
+  const btn = document.getElementById('menu-btn');
+  if (window.innerWidth <= 768) {
+    btn.style.display = 'block';
+  } else {
+    btn.style.display = 'none';
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('visible');
+  }
+}
+
+window.addEventListener('resize', initResponsive);
+initResponsive();
+
+// Close sidebar on nav item click (mobile)
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.nav-item') && window.innerWidth <= 768) {
+    closeSidebar();
+  }
+});
 </script>
 </body>
 </html>
